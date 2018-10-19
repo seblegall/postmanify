@@ -2,6 +2,7 @@ package postmanify
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"regexp"
 	"sort"
@@ -199,20 +200,31 @@ func (c *Converter) buildPostmanBody(endpoint swagger2.Endpoint) postman2.Reques
 
 	for _, param := range endpoint.Parameters {
 		if param.Required && param.In == "body" && (param.Schema.Type == "object" || param.Schema.Ref != "") {
-			parsedDef := param.Schema.ParseDefinition()
-			for id, def := range c.definitions {
-				if id == parsedDef {
-					switch def.Type {
-					case "object":
-						requestBody.Raw = c.buildProperties(def.Properties)
-					}
-
-				}
+			props, err := c.getPropertiesFromRef(param.Schema.Ref)
+			if err != nil {
+				continue
 			}
+			requestBody.Raw = props
 		}
 	}
 
 	return requestBody
+}
+
+func (c *Converter) getPropertiesFromRef(s string) (string, error) {
+	//check for definition
+	parsedDef := swagger2.ParseDefinition(s)
+	def, ok := c.definitions[parsedDef]
+	if !ok {
+		return "", fmt.Errorf("definition not found")
+	}
+
+	switch def.Type {
+	case "object":
+		return c.buildProperties(def.Properties), nil
+	}
+
+	return "", fmt.Errorf("unsupported type of definition")
 }
 
 func (c *Converter) buildProperties(properties map[string]swagger2.Property) string {
@@ -228,6 +240,14 @@ func (c *Converter) buildProperties(properties map[string]swagger2.Property) str
 
 	for _, key := range keys {
 		prop := properties[key]
+
+		if prop.Ref != "" {
+			props, err := c.getPropertiesFromRef(prop.Ref)
+			if err != nil {
+				continue
+			}
+			body[key] = json.RawMessage(props)
+		}
 
 		if prop.Example != nil {
 			body[key] = prop.Example

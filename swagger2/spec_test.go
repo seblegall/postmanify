@@ -55,7 +55,7 @@ func TestParseDefinition(t *testing.T) {
 	}
 
 	for _, data := range dataset {
-		assert.Equal(t, data.expected, data.input.ParseDefinition())
+		assert.Equal(t, data.expected, swagger2.ParseDefinition(data.input.Ref))
 	}
 
 }

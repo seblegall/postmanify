@@ -71,6 +71,17 @@ func TestBuildPostmanURL(t *testing.T) {
 
 func TestBuildProperties(t *testing.T) {
 
+	definitions := map[string]swagger2.Definition{
+		"Test": swagger2.Definition{
+			Type: "object",
+			Properties: map[string]swagger2.Property{
+				"test": swagger2.Property{
+					Example: 1234,
+				},
+			},
+		},
+	}
+
 	dataset := []struct {
 		input    map[string]swagger2.Property
 		expected string
@@ -101,10 +112,29 @@ func TestBuildProperties(t *testing.T) {
 			},
 			expected: indentJSON(`{"createdAt":"1994-03-03T00:00:00+0100","id":1234,"username":"string"}`),
 		},
+		{
+			input: map[string]swagger2.Property{
+				"createdAt": swagger2.Property{
+					Type:   "string",
+					Format: "date-time",
+				},
+				"id": swagger2.Property{
+					Example: 1234,
+				},
+				"test": swagger2.Property{
+					Ref: "#/definitions/Test",
+				},
+				"username": swagger2.Property{
+					Type: "string",
+				},
+			},
+			expected: indentJSON(`{"createdAt":"1994-03-03T00:00:00+0100","id":1234, "test":{"test":1234},"username":"string"}`),
+		},
 	}
 
 	for _, data := range dataset {
 		conv := NewConverter(Config{})
+		conv.definitions = definitions
 		assert.Equal(t, data.expected, string(conv.buildProperties(data.input)))
 
 	}

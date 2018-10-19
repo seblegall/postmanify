@@ -92,11 +92,15 @@ type Schema struct {
 	Ref  string `json:"$ref,omitempty"`
 }
 
-func (s *Schema) ParseDefinition() string {
+func ParseDefinition(s string) string {
 	// "#/definitions/User"
 	rx := regexp.MustCompile(`^\#\/definitions\/((.+))$`)
-	result := rx.FindStringSubmatch(s.Ref)
-	return result[1]
+	result := rx.FindStringSubmatch(s)
+	if len(result) > 2 {
+		return result[1]
+	}
+
+	return ""
 }
 
 type Header struct {
