@@ -87,7 +87,8 @@ type Response struct {
 }
 
 type Schema struct {
-	Ref string `json:"$ref,omitempty"`
+	Type string `json:"type,omitempty"`
+	Ref  string `json:"$ref,omitempty"`
 }
 
 type Header struct {
@@ -121,4 +122,5 @@ type Parameter struct {
 	Description string      `json:"description,omitempty"`
 	Required    bool        `json:"required,omitempty"`
 	Default     interface{} `json:"default,omitempty"`
+	Schema      Schema      `json:"schema,omitempty"`
 }

@@ -145,8 +145,11 @@ func (c *Converter) buildPostmanURL(url string, endpoint swagger2.Endpoint) post
 	rawPostmanURL := strings.TrimSpace(strings.Join([]string{
 		host,
 		c.Config.BasePath,
-		strings.TrimSpace(url),
+		strings.Replace(url, " ", "", -1),
 	}, "/"))
+
+	fmt.Println(rawPostmanURL)
+
 	rx1 := regexp.MustCompile(`/+`)
 	rawPostmanURL = rx1.ReplaceAllString(rawPostmanURL, "/")
 	rx2 := regexp.MustCompile(`^/+`)
