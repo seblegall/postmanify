@@ -127,6 +127,7 @@ type Header struct {
 type RequestBody struct {
 	Mode       string            `json:"mode,omitempty"`
 	URLEncoded []URLEncodedParam `json:"urlencoded,omitempty"`
+	Raw        string            `json:"raw,omitempty"`
 }
 
 type URLEncodedParam struct {

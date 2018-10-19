@@ -2,7 +2,6 @@ package postmanify
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"regexp"
 	"sort"
@@ -22,12 +21,13 @@ type Config struct {
 }
 
 type Converter struct {
-	Config Config
+	config      Config
+	definitions map[string]swagger2.Definition
 }
 
 func NewConverter(cfg Config) *Converter {
 	return &Converter{
-		Config: cfg,
+		config: cfg,
 	}
 }
 
@@ -38,20 +38,22 @@ func (c *Converter) Convert(swaggerSpec []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	if c.Config.Hostname == "" {
-		c.Config.Hostname = strings.TrimSpace(swag.Host)
+	if c.config.Hostname == "" {
+		c.config.Hostname = strings.TrimSpace(swag.Host)
 	}
 
-	if c.Config.BasePath == "" {
-		c.Config.BasePath = strings.TrimSpace(swag.BasePath)
+	if c.config.BasePath == "" {
+		c.config.BasePath = strings.TrimSpace(swag.BasePath)
 	}
 
 	//if schema is not defined in config, we take the first one declared on the swagger specs.
-	if c.Config.Schema == "" && len(swag.Schemes) >= 1 {
-		c.Config.Schema = strings.TrimSpace(swag.Schemes[0])
+	if c.config.Schema == "" && len(swag.Schemes) >= 1 {
+		c.config.Schema = strings.TrimSpace(swag.Schemes[0])
 	} else {
-		c.Config.Schema = "http"
+		c.config.Schema = "http"
 	}
+
+	c.definitions = swag.Definitions
 
 	pman := postman2.NewCollection(strings.TrimSpace(swag.Info.Title), strings.TrimSpace(swag.Info.Description))
 
@@ -104,11 +106,17 @@ func (c *Converter) buildPostmanItem(url, method string, endpoint swagger2.Endpo
 
 func (c *Converter) buildPostmanRequest(url, method string, endpoint swagger2.Endpoint) postman2.Request {
 
-	return postman2.Request{
+	request := postman2.Request{
 		Method: strings.ToUpper(method),
 		URL:    c.buildPostmanURL(url, endpoint),
 		Header: c.buildPostmanHeaders(endpoint),
 	}
+
+	if method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch {
+		request.Body = c.buildPostmanBody(endpoint)
+	}
+
+	return request
 }
 
 func (c *Converter) buildPostmanHeaders(endpoint swagger2.Endpoint) []postman2.Header {
@@ -127,7 +135,7 @@ func (c *Converter) buildPostmanHeaders(endpoint swagger2.Endpoint) []postman2.H
 				Value: strings.TrimSpace(endpoint.Produces[0])})
 		}
 	}
-	headers = append(headers, c.Config.PostmanHeaders...)
+	headers = append(headers, c.config.PostmanHeaders...)
 
 	return headers
 }
@@ -136,19 +144,17 @@ func (c *Converter) buildPostmanURL(url string, endpoint swagger2.Endpoint) post
 
 	//create hostname
 	host := strings.TrimSpace(strings.Join([]string{
-		c.Config.HostnamePrefix,
-		c.Config.Hostname,
-		c.Config.HostnameSuffix,
+		c.config.HostnamePrefix,
+		c.config.Hostname,
+		c.config.HostnameSuffix,
 	}, ""))
 
 	//create URI
 	rawPostmanURL := strings.TrimSpace(strings.Join([]string{
 		host,
-		c.Config.BasePath,
+		c.config.BasePath,
 		strings.Replace(url, " ", "", -1),
 	}, "/"))
-
-	fmt.Println(rawPostmanURL)
 
 	rx1 := regexp.MustCompile(`/+`)
 	rawPostmanURL = rx1.ReplaceAllString(rawPostmanURL, "/")
@@ -156,13 +162,11 @@ func (c *Converter) buildPostmanURL(url string, endpoint swagger2.Endpoint) post
 	rawPostmanURL = rx2.ReplaceAllString(rawPostmanURL, "")
 
 	//Add schema
-	rawPostmanURL = strings.Join([]string{c.Config.Schema, rawPostmanURL}, "://")
+	rawPostmanURL = strings.Join([]string{c.config.Schema, rawPostmanURL}, "://")
 
 	//Replace URI parameters
-	fmt.Printf("tmp postman url : %s \n", rawPostmanURL)
 	rx3 := regexp.MustCompile(`(^|[^\{])\{([^\/\{\}]+)\}([^\}]|$)`)
 	rawPostmanURL = rx3.ReplaceAllString(rawPostmanURL, "$1{{$2}}$3")
-	fmt.Printf("tmp postman url (after regex) : %s \n", rawPostmanURL)
 
 	postmanURL := postman2.NewURL(rawPostmanURL)
 
@@ -171,7 +175,6 @@ func (c *Converter) buildPostmanURL(url string, endpoint swagger2.Endpoint) post
 
 	for _, part := range postmanURL.Path {
 		rs4 := rx4.FindAllStringSubmatch(part, -1)
-		fmt.Printf("test url param : %s \n", rs4)
 		if len(rs4) > 0 {
 			baseVariable := rs4[0][2]
 			var defaultValue interface{}
@@ -186,4 +189,68 @@ func (c *Converter) buildPostmanURL(url string, endpoint swagger2.Endpoint) post
 	}
 
 	return postmanURL
+}
+
+func (c *Converter) buildPostmanBody(endpoint swagger2.Endpoint) postman2.RequestBody {
+
+	requestBody := postman2.RequestBody{
+		Mode: "raw",
+	}
+
+	for _, param := range endpoint.Parameters {
+		if param.Required && param.In == "body" && (param.Schema.Type == "object" || param.Schema.Ref != "") {
+			parsedDef := param.Schema.ParseDefinition()
+			for id, def := range c.definitions {
+				if id == parsedDef {
+					switch def.Type {
+					case "object":
+						requestBody.Raw = c.buildProperties(def.Properties)
+					}
+
+				}
+			}
+		}
+	}
+
+	return requestBody
+}
+
+func (c *Converter) buildProperties(properties map[string]swagger2.Property) string {
+
+	body := make(map[string]interface{})
+
+	keys := []string{}
+	for key := range properties {
+		keys = append(keys, key)
+	}
+
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		prop := properties[key]
+
+		if prop.Example != nil {
+			body[key] = prop.Example
+			continue
+		}
+
+		switch prop.Type {
+		case "integer":
+			body[key] = 0
+		case "string":
+			if prop.Format == "date-time" {
+				body[key] = "1994-03-03T00:00:00+0100"
+			} else {
+				body[key] = "string"
+			}
+		}
+	}
+
+	b, err := json.MarshalIndent(body, "", "\t")
+	if err != nil {
+		panic(err)
+	}
+
+	return string(b)
+
 }

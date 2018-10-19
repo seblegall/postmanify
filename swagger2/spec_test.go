@@ -40,3 +40,22 @@ func TestHasMethodWithTag(t *testing.T) {
 	path3, _ := spec.Paths["/pet/{petId}"]
 	assert.True(t, path3.HasMethodWithTag(http.MethodDelete))
 }
+
+func TestParseDefinition(t *testing.T) {
+	dataset := []struct {
+		input    swagger2.Schema
+		expected string
+	}{
+		{
+			input: swagger2.Schema{
+				Ref: "#/definitions/User",
+			},
+			expected: "User",
+		},
+	}
+
+	for _, data := range dataset {
+		assert.Equal(t, data.expected, data.input.ParseDefinition())
+	}
+
+}

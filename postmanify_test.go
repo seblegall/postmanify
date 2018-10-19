@@ -1,7 +1,8 @@
 package postmanify
 
 import (
-	"fmt"
+	"bytes"
+	"encoding/json"
 	"testing"
 
 	"github.com/Meetic/postmanify/postman2"
@@ -59,8 +60,6 @@ func TestBuildPostmanURL(t *testing.T) {
 		conv := NewConverter(data.input.cfg)
 		url := conv.buildPostmanURL(data.input.url, data.input.endpoint)
 
-		fmt.Println(conv.Config)
-
 		assert.Equal(t, data.expected.Raw, url.Raw)
 		assert.Equal(t, data.expected.Protocol, url.Protocol)
 		assert.Equal(t, data.expected.Host, url.Host)
@@ -68,4 +67,54 @@ func TestBuildPostmanURL(t *testing.T) {
 
 	}
 
+}
+
+func TestBuildProperties(t *testing.T) {
+
+	dataset := []struct {
+		input    map[string]swagger2.Property
+		expected string
+	}{
+		{
+			input: map[string]swagger2.Property{
+				"id": swagger2.Property{
+					Example: 1234,
+				},
+				"username": swagger2.Property{
+					Example: "john",
+				},
+			},
+			expected: indentJSON(`{"id":1234,"username":"john"}`),
+		},
+		{
+			input: map[string]swagger2.Property{
+				"createdAt": swagger2.Property{
+					Type:   "string",
+					Format: "date-time",
+				},
+				"id": swagger2.Property{
+					Example: 1234,
+				},
+				"username": swagger2.Property{
+					Type: "string",
+				},
+			},
+			expected: indentJSON(`{"createdAt":"1994-03-03T00:00:00+0100","id":1234,"username":"string"}`),
+		},
+	}
+
+	for _, data := range dataset {
+		conv := NewConverter(Config{})
+		assert.Equal(t, data.expected, string(conv.buildProperties(data.input)))
+
+	}
+}
+
+func indentJSON(s string) string {
+	var out bytes.Buffer
+	err := json.Indent(&out, []byte(s), "", "\t")
+	if err != nil {
+		panic(err)
+	}
+	return string(out.Bytes())
 }

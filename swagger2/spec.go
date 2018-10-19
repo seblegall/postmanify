@@ -2,6 +2,7 @@ package swagger2
 
 import (
 	"encoding/json"
+	"regexp"
 	"strings"
 )
 
@@ -91,6 +92,13 @@ type Schema struct {
 	Ref  string `json:"$ref,omitempty"`
 }
 
+func (s *Schema) ParseDefinition() string {
+	// "#/definitions/User"
+	rx := regexp.MustCompile(`^\#\/definitions\/((.+))$`)
+	result := rx.FindStringSubmatch(s.Ref)
+	return result[1]
+}
+
 type Header struct {
 	Type        string `json:"type,omitempty"`
 	Description string `json:"description,omitempty"`
@@ -102,11 +110,12 @@ type Definition struct {
 }
 
 type Property struct {
-	Description string `json:"description,omitempty"`
-	Format      string `json:"format,omitempty"`
-	Items       Items  `json:"items,omitempty"`
-	Type        string `json:"type,omitempty"`
-	Ref         string `json:"$ref,omitempty"`
+	Description string      `json:"description,omitempty"`
+	Format      string      `json:"format,omitempty"`
+	Items       Items       `json:"items,omitempty"`
+	Type        string      `json:"type,omitempty"`
+	Ref         string      `json:"$ref,omitempty"`
+	Example     interface{} `json:"example,omitempty"`
 }
 
 type Items struct {
