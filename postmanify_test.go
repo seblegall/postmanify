@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/Meetic/postmanify/postman2"
-	"github.com/Meetic/postmanify/swagger2"
+	"github.com/go-openapi/spec"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -20,17 +20,17 @@ func TestNewConverter(t *testing.T) {
 func TestBuildPostmanURL(t *testing.T) {
 	dataset := []struct {
 		input struct {
-			cfg      Config
-			url      string
-			endpoint swagger2.Endpoint
+			cfg       Config
+			url       string
+			operation *spec.Operation
 		}
 		expected postman2.URL
 	}{
 		{
 			input: struct {
-				cfg      Config
-				url      string
-				endpoint swagger2.Endpoint
+				cfg       Config
+				url       string
+				operation *spec.Operation
 			}{
 				cfg: Config{
 					Hostname:       "hostname",
@@ -39,8 +39,8 @@ func TestBuildPostmanURL(t *testing.T) {
 					BasePath:       "/test/",
 					Schema:         "http",
 				},
-				url:      "/test / test /  {test}",
-				endpoint: swagger2.Endpoint{},
+				url:       "/test / test /  {test}",
+				operation: &spec.Operation{},
 			},
 			expected: postman2.URL{
 				Raw:      "http://prefix.hostname.suffix.com/test/test/test/{{test}}",
@@ -58,7 +58,7 @@ func TestBuildPostmanURL(t *testing.T) {
 
 	for _, data := range dataset {
 		conv := NewConverter(data.input.cfg)
-		url := conv.buildPostmanURL(data.input.url, data.input.endpoint)
+		url := conv.buildPostmanURL(data.input.url, data.input.operation)
 
 		assert.Equal(t, data.expected.Raw, url.Raw)
 		assert.Equal(t, data.expected.Protocol, url.Protocol)
@@ -71,70 +71,108 @@ func TestBuildPostmanURL(t *testing.T) {
 
 func TestBuildProperties(t *testing.T) {
 
-	definitions := map[string]swagger2.Definition{
-		"Test": swagger2.Definition{
-			Type: "object",
-			Properties: map[string]swagger2.Property{
-				"test": swagger2.Property{
-					Example: 1234,
-				},
-			},
-		},
+	dataSlice := []string{"ok", "nok"}
+	var interfaceSlice []interface{} = make([]interface{}, len(dataSlice))
+	for i, d := range dataSlice {
+		interfaceSlice[i] = d
 	}
 
 	dataset := []struct {
-		input    map[string]swagger2.Property
+		input    map[string]spec.Schema
 		expected string
 	}{
 		{
-			input: map[string]swagger2.Property{
-				"id": swagger2.Property{
-					Example: 1234,
+			input: map[string]spec.Schema{
+				"id": spec.Schema{
+					SwaggerSchemaProps: spec.SwaggerSchemaProps{
+						Example: 1234,
+					},
 				},
-				"username": swagger2.Property{
-					Example: "john",
+				"username": spec.Schema{
+					SwaggerSchemaProps: spec.SwaggerSchemaProps{
+						Example: "john",
+					},
 				},
 			},
 			expected: indentJSON(`{"id":1234,"username":"john"}`),
 		},
 		{
-			input: map[string]swagger2.Property{
-				"createdAt": swagger2.Property{
-					Type:   "string",
-					Format: "date-time",
+			input: map[string]spec.Schema{
+				"createdAt": spec.Schema{
+					SchemaProps: spec.SchemaProps{
+						Type:   spec.StringOrArray{"string"},
+						Format: "date-time",
+					},
 				},
-				"id": swagger2.Property{
-					Example: 1234,
+				"id": spec.Schema{
+					SwaggerSchemaProps: spec.SwaggerSchemaProps{
+						Example: 1234,
+					},
 				},
-				"username": swagger2.Property{
-					Type: "string",
+				"username": spec.Schema{
+					SchemaProps: spec.SchemaProps{
+						Type: spec.StringOrArray{"string"},
+					},
 				},
 			},
-			expected: indentJSON(`{"createdAt":"1994-03-03T00:00:00+0100","id":1234,"username":"string"}`),
+			expected: indentJSON(`{"createdAt":"2009-11-17T20:34:58Z","id":1234,"username":"string"}`),
 		},
 		{
-			input: map[string]swagger2.Property{
-				"createdAt": swagger2.Property{
-					Type:   "string",
-					Format: "date-time",
+			input: map[string]spec.Schema{
+				"createdAt": spec.Schema{
+					SchemaProps: spec.SchemaProps{
+						Type:   spec.StringOrArray{"string"},
+						Format: "date-time",
+					},
 				},
-				"id": swagger2.Property{
-					Example: 1234,
+				"id": spec.Schema{
+					SwaggerSchemaProps: spec.SwaggerSchemaProps{
+						Example: 1234,
+					},
 				},
-				"test": swagger2.Property{
-					Ref: "#/definitions/Test",
+				"test": spec.Schema{
+					SchemaProps: spec.SchemaProps{
+						Type: spec.StringOrArray{"object"},
+						Properties: map[string]spec.Schema{
+							"test": spec.Schema{
+								SchemaProps: spec.SchemaProps{
+									Type: spec.StringOrArray{"integer"},
+								},
+								SwaggerSchemaProps: spec.SwaggerSchemaProps{
+									Example: 1234,
+								},
+							},
+						},
+					},
 				},
-				"username": swagger2.Property{
-					Type: "string",
+				"username": spec.Schema{
+					SchemaProps: spec.SchemaProps{
+						Type: spec.StringOrArray{"string"},
+					},
 				},
 			},
-			expected: indentJSON(`{"createdAt":"1994-03-03T00:00:00+0100","id":1234, "test":{"test":1234},"username":"string"}`),
+			expected: indentJSON(`{"createdAt":"2009-11-17T20:34:58Z","id":1234, "test":{"test":1234},"username":"string"}`),
+		},
+		{
+			input: map[string]spec.Schema{
+				"id": spec.Schema{
+					SwaggerSchemaProps: spec.SwaggerSchemaProps{
+						Example: 1234,
+					},
+				},
+				"status": spec.Schema{
+					SchemaProps: spec.SchemaProps{
+						Type: spec.StringOrArray{"string"},
+						Enum: interfaceSlice,
+					},
+				},
+			},
+			expected: indentJSON(`{"id":1234,"status":"ok"}`),
 		},
 	}
 
 	for _, data := range dataset {
 		conv := NewConverter(Config{})
-		conv.definitions = definitions
 		assert.Equal(t, data.expected, string(conv.buildProperties(data.input)))
 
 	}
