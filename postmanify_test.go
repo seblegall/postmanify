@@ -169,6 +169,28 @@ func TestBuildProperties(t *testing.T) {
 			},
 			expected: indentJSON(`{"id":1234,"status":"ok"}`),
 		},
+		{
+			input: map[string]spec.Schema{
+				"id": spec.Schema{
+					SwaggerSchemaProps: spec.SwaggerSchemaProps{
+						Example: 1234,
+					},
+				},
+				"result": spec.Schema{
+					SchemaProps: spec.SchemaProps{
+						Type: spec.StringOrArray{"array"},
+						Items: &spec.SchemaOrArray{
+							Schema: &spec.Schema{
+								SchemaProps: spec.SchemaProps{
+									Type: spec.StringOrArray{"string"},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: indentJSON(`{"id":1234,"result":["string"]}`),
+		},
 	}
 
 	for _, data := range dataset {

@@ -236,7 +236,6 @@ func (c *Converter) buildPostmanBody(operation *spec.Operation) postman2.Request
 			if param.Schema.Type.Contains("object") {
 				props := c.buildProperties(param.Schema.Properties)
 				requestBody.Raw = props
-
 			}
 
 			if param.Schema.Type.Contains("array") {
@@ -276,23 +275,27 @@ func (c *Converter) buildProperties(properties map[string]spec.Schema) string {
 			continue
 		}
 
-		//Property has no example value : we set one by default
-		if prop.Type.Contains("integer") {
-			body[key] = 0
-		}
-
-		if prop.Type.Contains("string") {
-			switch prop.Format {
-			case "date-time":
-				body[key] = time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC).Format(time.RFC3339)
-			default:
-				body[key] = "string"
-			}
-		}
-
 		if prop.Type.Contains("object") {
 			body[key] = json.RawMessage(c.buildProperties(prop.Properties))
+			continue
 		}
+
+		if prop.Type.Contains("array") {
+			if prop.Items.ContainsType("object") {
+				array := []string{c.buildProperties(prop.Items.Schema.Properties)}
+				rawArray, _ := json.MarshalIndent(array, "", "\t")
+				body[key] = json.RawMessage(rawArray)
+				continue
+			}
+			var array []interface{}
+			array = append(array, buildPropertyDefaultValue(prop.Items.Schema.Type, prop.Items.Schema.Format))
+			rawArray, _ := json.MarshalIndent(array, "", "\t")
+			body[key] = json.RawMessage(rawArray)
+			continue
+		}
+
+		body[key] = buildPropertyDefaultValue(prop.Type, prop.Format)
+
 	}
 
 	b, err := json.MarshalIndent(body, "", "\t")
@@ -301,5 +304,27 @@ func (c *Converter) buildProperties(properties map[string]spec.Schema) string {
 	}
 
 	return string(b)
+}
 
+func buildPropertyDefaultValue(propType spec.StringOrArray, propFormat string) interface{} {
+
+	if propType == nil {
+		return ""
+	}
+
+	//Property has no example value : we set one by default
+	if propType.Contains("integer") {
+		return 0
+	}
+
+	if propType.Contains("string") {
+		switch propFormat {
+		case "date-time":
+			return time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC).Format(time.RFC3339)
+		default:
+			return "string"
+		}
+	}
+
+	return ""
 }
