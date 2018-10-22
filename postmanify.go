@@ -239,6 +239,17 @@ func (c *Converter) buildPostmanBody(operation *spec.Operation) postman2.Request
 			}
 
 			if param.Schema.Type.Contains("array") {
+				if param.Schema.Items.ContainsType("object") {
+					array := []json.RawMessage{json.RawMessage(c.buildProperties(param.Schema.Items.Schema.Properties))}
+					rawArray, _ := json.MarshalIndent(array, "", "\t")
+					requestBody.Raw = string(rawArray)
+					continue
+				}
+
+				var array []interface{}
+				array = append(array, buildPropertyDefaultValue(param.Schema.Items.Schema.Type, param.Schema.Items.Schema.Format))
+				rawArray, _ := json.MarshalIndent(array, "", "\t")
+				requestBody.Raw = string(rawArray)
 
 			}
 		}
@@ -282,7 +293,7 @@ func (c *Converter) buildProperties(properties map[string]spec.Schema) string {
 
 		if prop.Type.Contains("array") {
 			if prop.Items.ContainsType("object") {
-				array := []string{c.buildProperties(prop.Items.Schema.Properties)}
+				array := []json.RawMessage{json.RawMessage(c.buildProperties(prop.Items.Schema.Properties))}
 				rawArray, _ := json.MarshalIndent(array, "", "\t")
 				body[key] = json.RawMessage(rawArray)
 				continue
