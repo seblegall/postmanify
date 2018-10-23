@@ -84,6 +84,7 @@ type URL struct {
 	Host     []string          `json:"host,omitempty"`
 	Path     []string          `json:"path,omitempty"`
 	Variable []URLVariable     `json:"variable,omitempty"`
+	Query    []URLQueryParam   `json:"query,omitempty"`
 }
 
 type URLVariable struct {
@@ -100,11 +101,12 @@ func NewURL(rawURL string) URL {
 	if len(rs) > 0 {
 		for _, m := range rs {
 			url.Protocol = m[1]
+
 			hostname := m[2]
-			path := m[3]
 			hostnameParts := strings.Split(hostname, ".")
 			url.Host = hostnameParts
 
+			path := m[3]
 			pathParts := strings.Split(path, "/")
 			url.Path = pathParts
 		}
@@ -116,6 +118,15 @@ func NewURL(rawURL string) URL {
 func (url *URL) AddVariable(key string, value interface{}) {
 	variable := URLVariable{ID: key, Value: value}
 	url.Variable = append(url.Variable, variable)
+}
+
+func (url *URL) AddQueryParam(param URLQueryParam) {
+	url.Query = append(url.Query, param)
+}
+
+type URLQueryParam struct {
+	Key   string      `json:"key,omitempty"`
+	Value interface{} `json:"value,omitempty"`
 }
 
 type Header struct {

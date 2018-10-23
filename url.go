@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/Meetic/postmanify/postman2"
 	"github.com/go-openapi/spec"
@@ -88,7 +89,85 @@ func (c *Converter) buildPostmanURL(url string, operation *spec.Operation) postm
 		}
 	}
 
+	queryParams := buildQueryParams(operation)
+
+	for _, queryParam := range queryParams {
+		postmanURL.AddQueryParam(queryParam)
+	}
+
 	return postmanURL
+}
+
+func buildQueryParams(operation *spec.Operation) []postman2.URLQueryParam {
+
+	var queryParam []postman2.URLQueryParam
+
+	for _, param := range operation.Parameters {
+		if param.In == "query" {
+
+			if param.Example != nil {
+				queryParam = append(queryParam, postman2.URLQueryParam{Key: param.Name, Value: param.Example})
+				continue
+			}
+
+			if param.Default != nil {
+				queryParam = append(queryParam, postman2.URLQueryParam{Key: param.Name, Value: param.Default})
+				continue
+			}
+
+			if len(param.Enum) > 0 {
+				queryParam = append(queryParam, postman2.URLQueryParam{Key: param.Name, Value: param.Enum[0]})
+				continue
+			}
+
+			if param.Type == "array" {
+				if param.Items.Example != nil {
+					queryParam = append(queryParam, postman2.URLQueryParam{Key: param.Name, Value: param.Items.Example})
+					continue
+				}
+				if param.Items.Default != nil {
+					queryParam = append(queryParam, postman2.URLQueryParam{Key: param.Name, Value: param.Items.Default})
+					continue
+				}
+
+				if len(param.Items.Enum) > 0 {
+					queryParam = append(queryParam, postman2.URLQueryParam{Key: param.Name, Value: param.Items.Enum[0]})
+					continue
+				}
+
+				queryParam = append(queryParam, postman2.URLQueryParam{Key: param.Name, Value: buildQueryParamDefaultValue(param.Items.Type, param.Items.Format)})
+				continue
+			}
+
+			queryParam = append(queryParam, postman2.URLQueryParam{Key: param.Name, Value: buildQueryParamDefaultValue(param.Type, param.Format)})
+		}
+	}
+
+	return queryParam
+
+}
+
+func buildQueryParamDefaultValue(propType string, propFormat string) interface{} {
+
+	if propType == "" {
+		return ""
+	}
+
+	//Property has no example value : we set one by default
+	if propType == "integer" {
+		return 0
+	}
+
+	if propType == "string" {
+		switch propFormat {
+		case "date-time":
+			return time.Date(2009, 11, 17, 20, 34, 58, 651387237, time.UTC).Format(time.RFC3339)
+		default:
+			return "string"
+		}
+	}
+
+	return ""
 }
 
 func pathHasMethodWithTag(path spec.PathItem, method string) bool {
