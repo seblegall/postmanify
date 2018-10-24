@@ -23,16 +23,21 @@ func (c *Converter) buildPostmanItem(url, method string, operation *spec.Operati
 	}
 
 	//build item
-	return postman2.APIItem{
+	item := postman2.APIItem{
 		Name:    url,
 		Request: request,
-		Event: []postman2.Event{
+	}
+
+	if script := buildPostmanScript(operation.Extensions); len(script.Exec) > 0 {
+		item.Event = []postman2.Event{
 			postman2.Event{
 				Listen: "test",
-				Script: buildPostmanScript(operation.Extensions),
+				Script: script,
 			},
-		},
+		}
 	}
+
+	return item
 
 }
 
