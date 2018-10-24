@@ -26,6 +26,12 @@ func (c *Converter) buildPostmanItem(url, method string, operation *spec.Operati
 	return postman2.APIItem{
 		Name:    url,
 		Request: request,
+		Event: []postman2.Event{
+			postman2.Event{
+				Listen: "test",
+				Script: buildPostmanScript(operation.Extensions),
+			},
+		},
 	}
 
 }
