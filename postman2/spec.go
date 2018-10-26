@@ -138,7 +138,15 @@ type Header struct {
 type RequestBody struct {
 	Mode       string            `json:"mode,omitempty"`
 	URLEncoded []URLEncodedParam `json:"urlencoded,omitempty"`
+	FormData   []FormData        `json:"formdata,omitempty"`
 	Raw        string            `json:"raw,omitempty"`
+}
+
+type FormData struct {
+	Key     string `json:"key,omitempty"`
+	Value   string `json:"value,omitempty"`
+	Type    string `json:"type,omitempty"`
+	Enabled bool   `json:"enabled,omitempty"`
 }
 
 type URLEncodedParam struct {

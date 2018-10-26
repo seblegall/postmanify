@@ -64,11 +64,31 @@ func (c *Converter) buildPostmanHeaders(operation *spec.Operation) []postman2.He
 
 func (c *Converter) buildPostmanBody(operation *spec.Operation) postman2.RequestBody {
 
-	requestBody := postman2.RequestBody{
-		Mode: "raw",
-	}
+	requestBody := postman2.RequestBody{}
 
+	var formData []postman2.FormData
+	//formData
 	for _, param := range operation.Parameters {
+
+		if param.In == "formData" {
+			var value string
+			if param.Default != nil {
+				value, _ = param.Default.(string)
+			} else if param.Example != nil {
+				value, _ = param.Example.(string)
+			} else {
+				value = "string"
+			}
+
+			formData = append(formData, postman2.FormData{
+				Key:     param.Name,
+				Value:   value,
+				Enabled: param.Required,
+				Type:    "text",
+			})
+		}
+
+		//raw body
 		if param.Required && param.In == "body" {
 			if param.Schema.Type.Contains("object") {
 				props := c.buildProperties(param.Schema.Properties)
@@ -92,5 +112,12 @@ func (c *Converter) buildPostmanBody(operation *spec.Operation) postman2.Request
 		}
 	}
 
+	if len(formData) > 0 {
+		requestBody.Mode = "formdata"
+		requestBody.FormData = formData
+		return requestBody
+	}
+
+	requestBody.Mode = "raw"
 	return requestBody
 }
