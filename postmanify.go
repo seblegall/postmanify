@@ -15,7 +15,7 @@ type Config struct {
 	HostnameSuffix string
 	Schema         string
 	BasePath       string
-	PostmanHeaders []postman2.Header
+	PostmanHeaders map[string]postman2.Header
 }
 
 type Converter struct {

@@ -42,24 +42,47 @@ func (c *Converter) buildPostmanItem(url, method string, operation *spec.Operati
 }
 
 func (c *Converter) buildPostmanHeaders(operation *spec.Operation) []postman2.Header {
-	headers := []postman2.Header{}
 	if len(operation.Consumes) > 0 {
 		if len(strings.TrimSpace(operation.Consumes[0])) > 0 {
-			headers = append(headers, postman2.Header{
+			c.config.PostmanHeaders["Content-Type"] = postman2.Header{
 				Key:   "Content-Type",
-				Value: strings.TrimSpace(operation.Consumes[0])})
+				Value: strings.TrimSpace(operation.Consumes[0])}
 		}
 	}
 	if len(operation.Produces) > 0 {
 		if len(strings.TrimSpace(operation.Produces[0])) > 0 {
-			headers = append(headers, postman2.Header{
+			c.config.PostmanHeaders["Accept"] = postman2.Header{
 				Key:   "Accept",
-				Value: strings.TrimSpace(operation.Produces[0])})
+				Value: strings.TrimSpace(operation.Produces[0])}
 		}
 	}
-	headers = append(headers, c.config.PostmanHeaders...)
 
-	return headers
+	for _, param := range operation.Parameters {
+		if param.In == "header" {
+			var value string
+			if param.Default != nil {
+				value, _ = param.Default.(string)
+			} else if param.Example != nil {
+				value, _ = param.Example.(string)
+			} else {
+				value = "string"
+			}
+
+			c.config.PostmanHeaders[param.Name] = postman2.Header{
+				Key:   param.Name,
+				Value: value,
+			}
+		}
+	}
+
+	var returnHeader []postman2.Header
+
+	for _, header := range c.config.PostmanHeaders {
+		returnHeader = append(returnHeader, header)
+	}
+
+	return returnHeader
+
 }
 
 func (c *Converter) buildPostmanBody(operation *spec.Operation) postman2.RequestBody {

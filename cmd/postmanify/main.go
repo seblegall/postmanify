@@ -21,9 +21,11 @@ func main() {
 	conv := postmanify.NewConverter(postmanify.Config{
 		HostnamePrefix: "prefix.",
 		HostnameSuffix: ".suffix.com",
-		PostmanHeaders: []postman2.Header{{
-			Key:   "Authorization",
-			Value: "Bearer {{my_access_token}}"}},
+		PostmanHeaders: map[string]postman2.Header{
+			"Authorization": {
+				Key:   "Authorization",
+				Value: "Bearer {{my_access_token}}"},
+		},
 	})
 
 	swag, _ := ioutil.ReadFile(swagSpecFilepath)
