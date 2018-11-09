@@ -1,26 +1,31 @@
 package main
 
 import (
-	"encoding/json"
+	"flag"
 	"io/ioutil"
-
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/spec"
 
 	"github.com/Meetic/postmanify"
 	"github.com/Meetic/postmanify/postman2"
 )
 
-const (
-	swagSpecFilepath         = "swagger.json"
-	swagSpecExtantedFilepath = "swagger_extended.json"
-	pmanSpecFilepath         = "postman.json"
+var (
+	swagSpecFilepath string
+	pmanSpecFilepath string
+	hostPrefix       string
+	hostSuffix       string
 )
 
 func main() {
+
+	flag.StringVar(&hostPrefix, "host-prefix", "", `A prefix to put before the globale hostname`)
+	flag.StringVar(&hostSuffix, "host-suffix", "", `A suffix to put after the globale hostname`)
+	flag.StringVar(&swagSpecFilepath, "f", "swagger.json", `The swagger file to convert`)
+	flag.StringVar(&pmanSpecFilepath, "o", "postman_collection.json", `The postman collection file as output`)
+	flag.Parse()
+
 	conv := postmanify.NewConverter(postmanify.Config{
-		HostnamePrefix: "prefix.",
-		HostnameSuffix: ".suffix.com",
+		HostnamePrefix: hostPrefix,
+		HostnameSuffix: hostSuffix,
 		PostmanHeaders: map[string]postman2.Header{
 			"Authorization": {
 				Key:   "Authorization",
@@ -35,29 +40,5 @@ func main() {
 	}
 
 	ioutil.WriteFile(pmanSpecFilepath, postman, 0644)
-
-	writeExtanded()
-
-}
-
-func writeExtanded() {
-	specDoc, err := loads.Spec(swagSpecFilepath)
-
-	if err != nil {
-		panic(err)
-	}
-
-	specDocExpand, err := specDoc.Expanded(&spec.ExpandOptions{
-		SkipSchemas:         false,
-		ContinueOnError:     true,
-		AbsoluteCircularRef: true,
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	postman, _ := json.MarshalIndent(specDocExpand.Spec(), "", "  ")
-
-	ioutil.WriteFile(swagSpecExtantedFilepath, postman, 0644)
 
 }
