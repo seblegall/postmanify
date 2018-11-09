@@ -191,3 +191,70 @@ func TestBuildPostmanFormData(t *testing.T) {
 	}
 
 }
+
+func TestBuildPostmanHeaders(t *testing.T) {
+	dataset := []struct {
+		converter *Converter
+		input     *spec.Operation
+		expected  []postman2.Header
+	}{
+		{
+			converter: NewConverter(Config{
+				PostmanHeaders: map[string]postman2.Header{
+					"testHeader2": postman2.Header{
+						Key:   "testHeader2",
+						Value: "test",
+					},
+				},
+			}),
+			input: &spec.Operation{
+				OperationProps: spec.OperationProps{
+					Parameters: []spec.Parameter{
+						spec.Parameter{
+							ParamProps: spec.ParamProps{
+								In:   "header",
+								Name: "testHeader",
+							},
+							SimpleSchema: spec.SimpleSchema{
+								Type: "string",
+							},
+						},
+						spec.Parameter{
+							ParamProps: spec.ParamProps{
+								In:       "header",
+								Required: true,
+								Name:     "testHeader2",
+							},
+							SimpleSchema: spec.SimpleSchema{
+								Type:    "string",
+								Default: "value",
+							},
+						},
+					},
+				},
+			},
+			expected: []postman2.Header{
+				postman2.Header{
+					Key:   "testHeader",
+					Value: "string",
+				},
+				{
+					Key:   "testHeader2",
+					Value: "value",
+				},
+			},
+		},
+	}
+
+	for _, data := range dataset {
+
+		headers := data.converter.buildPostmanHeaders(data.input)
+
+		for k, h := range headers {
+			assert.Equal(t, data.expected[k].Key, h.Key)
+			assert.Equal(t, data.expected[k].Value, h.Value)
+		}
+
+	}
+
+}
