@@ -26,6 +26,14 @@
 
 
 [[constraint]]
+  name = "github.com/go-openapi/loads"
+  version = "0.17.2"
+
+[[constraint]]
+  name = "github.com/go-openapi/spec"
+  version = "0.17.2"
+
+[[constraint]]
   name = "github.com/stretchr/testify"
   version = "1.2.2"
 

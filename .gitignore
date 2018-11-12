@@ -1,3 +1,4 @@
+/.idea/
 /vendor/
 /cmd/postmanify/postman.json
 /cmd/postmanify/swagger.json
