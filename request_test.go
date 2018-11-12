@@ -201,7 +201,7 @@ func TestBuildPostmanHeaders(t *testing.T) {
 		{
 			converter: NewConverter(Config{
 				PostmanHeaders: map[string]postman2.Header{
-					"testHeader2": postman2.Header{
+					"testHeader2": {
 						Key:   "testHeader2",
 						Value: "test",
 					},
@@ -210,7 +210,7 @@ func TestBuildPostmanHeaders(t *testing.T) {
 			input: &spec.Operation{
 				OperationProps: spec.OperationProps{
 					Parameters: []spec.Parameter{
-						spec.Parameter{
+						{
 							ParamProps: spec.ParamProps{
 								In:   "header",
 								Name: "testHeader",
@@ -219,7 +219,7 @@ func TestBuildPostmanHeaders(t *testing.T) {
 								Type: "string",
 							},
 						},
-						spec.Parameter{
+						{
 							ParamProps: spec.ParamProps{
 								In:       "header",
 								Required: true,
@@ -234,13 +234,13 @@ func TestBuildPostmanHeaders(t *testing.T) {
 				},
 			},
 			expected: []postman2.Header{
-				postman2.Header{
-					Key:   "testHeader",
-					Value: "string",
-				},
 				{
 					Key:   "testHeader2",
 					Value: "value",
+				},
+				{
+					Key:   "testHeader",
+					Value: "string",
 				},
 			},
 		},

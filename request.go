@@ -30,7 +30,7 @@ func (c *Converter) buildPostmanItem(url, method string, operation *spec.Operati
 
 	if script := buildPostmanScript(operation.Extensions); len(script.Exec) > 0 {
 		item.Event = []postman2.Event{
-			postman2.Event{
+			{
 				Listen: "test",
 				Script: script,
 			},
