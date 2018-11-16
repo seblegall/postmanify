@@ -1,12 +1,14 @@
 # Postmanify
 
-A simple Go library helping you to convert Swagger 2 spec document into Postman 2 collection
+A simple Go library helping you to convert Swagger 2 spec document into Postman 2 collection.
+
+Postmanify also comes with a binary ready to be used.
 
 ## Warning
 
-This lib is under development. Use it at your own risk.
+Postmanify is still under development. First release is an alpha version.
 
-## Usage
+## Lib usage
 
 ```go
 package main
@@ -45,4 +47,26 @@ func main() {
     	ioutil.WriteFile(pmanSpecFilepath, postman, 0644)
 
 }
+```
+
+## Binary usage
+
+### install
+
+```sh
+curl -sf https://raw.githubusercontent.com/Meetic/postmanify/master/install.sh | sh
+```
+
+### usage 
+
+```sh
+-f string
+        The swagger file to convert (default "swagger.json")
+  -host-prefix string
+        A prefix to put before the globale hostname
+  -host-suffix string
+        A suffix to put after the globale hostname
+  -o string
+        The postman collection file as output (default "postman_collection.json")
+
 ```

@@ -4,3 +4,4 @@
 /cmd/postmanify/postman.json
 /cmd/postmanify/swagger.json
 /cmd/postmanify/swagger_extended.json
+/dist/
