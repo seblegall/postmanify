@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Meetic/postmanify/postman2"
+	"github.com/seblegall/postmanify/postman2"
 	"github.com/go-openapi/spec"
 )
 
+//buildPostmanItem builds an item of a postman collection from a given path, method and a swagger Operation
 func (c *Converter) buildPostmanItem(url, method string, operation *spec.Operation) postman2.APIItem {
 
 	//build request
@@ -41,6 +42,7 @@ func (c *Converter) buildPostmanItem(url, method string, operation *spec.Operati
 
 }
 
+//buildPostmanHeaders builds headers from a swagger operation
 func (c *Converter) buildPostmanHeaders(operation *spec.Operation) []postman2.Header {
 	if len(operation.Consumes) > 0 {
 		if len(strings.TrimSpace(operation.Consumes[0])) > 0 {
@@ -85,14 +87,17 @@ func (c *Converter) buildPostmanHeaders(operation *spec.Operation) []postman2.He
 
 }
 
+//buildPostmanBody builds a request body from swagger Operation
+//Implementation is done for formData type and raw body type.
 func (c *Converter) buildPostmanBody(operation *spec.Operation) postman2.RequestBody {
 
 	requestBody := postman2.RequestBody{}
 
 	var formData []postman2.FormData
-	//formData
+
 	for _, param := range operation.Parameters {
 
+		//formData
 		if param.In == "formData" {
 			var value string
 			if param.Default != nil {
@@ -142,5 +147,7 @@ func (c *Converter) buildPostmanBody(operation *spec.Operation) postman2.Request
 	}
 
 	requestBody.Mode = "raw"
+
+	//TODO: Add other kind of body binary? x-www-form-urlencode?
 	return requestBody
 }

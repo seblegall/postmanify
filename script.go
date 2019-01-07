@@ -3,7 +3,7 @@ package postmanify
 import (
 	"strings"
 
-	"github.com/Meetic/postmanify/postman2"
+	"github.com/seblegall/postmanify/postman2"
 	"github.com/go-openapi/spec"
 )
 
