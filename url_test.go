@@ -1,7 +1,6 @@
 package postmanify
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Meetic/postmanify/postman2"
@@ -240,8 +239,6 @@ func TestBuildQueryParams(t *testing.T) {
 	}
 
 	for _, data := range dataset {
-
-		fmt.Println(data.input.Parameters[1].Enum)
 		assert.Equal(t, data.expected, buildQueryParams(data.input))
 	}
 }
