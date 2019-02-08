@@ -36,9 +36,7 @@ func TestBuildPostmanURL(t *testing.T) {
 				operation *spec.Operation
 			}{
 				cfg: Config{
-					Hostname:       "hostname",
-					HostnamePrefix: "prefix.",
-					HostnameSuffix: ".suffix.com",
+					Hostname:       "prefix.hostname.suffix.com",
 					BasePath:       "/test/",
 					Schema:         "http",
 				},
@@ -64,9 +62,7 @@ func TestBuildPostmanURL(t *testing.T) {
 				operation *spec.Operation
 			}{
 				cfg: Config{
-					Hostname:       "hostname",
-					HostnamePrefix: "prefix.",
-					HostnameSuffix: ".suffix.com",
+					Hostname:       "prefix.hostname.suffix.com",
 					BasePath:       "/test/",
 					Schema:         "http",
 				},

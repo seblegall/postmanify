@@ -11,21 +11,17 @@ import (
 var (
 	swagSpecFilepath string
 	pmanSpecFilepath string
-	hostPrefix       string
-	hostSuffix       string
+	host string
 )
 
 func main() {
 
-	flag.StringVar(&hostPrefix, "host-prefix", "", `A prefix to put before the globale hostname`)
-	flag.StringVar(&hostSuffix, "host-suffix", "", `A suffix to put after the globale hostname`)
+	flag.StringVar(&host, "host", "", `The hostname for the API`)
 	flag.StringVar(&swagSpecFilepath, "f", "swagger.json", `The swagger file to convert`)
 	flag.StringVar(&pmanSpecFilepath, "o", "postman_collection.json", `The postman collection file as output`)
 	flag.Parse()
 
 	conv := postmanify.NewConverter(postmanify.Config{
-		HostnamePrefix: hostPrefix,
-		HostnameSuffix: hostSuffix,
 		PostmanHeaders: map[string]postman2.Header{
 			"Authorization": {
 				Key:   "Authorization",
@@ -39,6 +35,8 @@ func main() {
 		panic(err)
 	}
 
-	ioutil.WriteFile(pmanSpecFilepath, postman, 0644)
+	if err := ioutil.WriteFile(pmanSpecFilepath, postman, 0644); err != nil {
+		panic(err)
+	}
 
 }

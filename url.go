@@ -45,9 +45,7 @@ func (c *Converter) buildPostmanURL(url string, operation *spec.Operation) postm
 
 	//create hostname
 	host := strings.TrimSpace(strings.Join([]string{
-		c.config.HostnamePrefix,
 		c.config.Hostname,
-		c.config.HostnameSuffix,
 	}, ""))
 
 	//create URI

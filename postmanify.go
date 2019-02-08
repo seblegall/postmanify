@@ -11,8 +11,6 @@ import (
 
 type Config struct {
 	Hostname       string
-	HostnamePrefix string
-	HostnameSuffix string
 	Schema         string
 	BasePath       string
 	PostmanHeaders map[string]postman2.Header
