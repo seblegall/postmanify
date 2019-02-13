@@ -1,7 +1,6 @@
 package postmanify
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Meetic/postmanify/postman2"
@@ -36,9 +35,7 @@ func TestBuildPostmanURL(t *testing.T) {
 				operation *spec.Operation
 			}{
 				cfg: Config{
-					Hostname:       "hostname",
-					HostnamePrefix: "prefix.",
-					HostnameSuffix: ".suffix.com",
+					Hostname:       "prefix.hostname.suffix.com",
 					BasePath:       "/test/",
 					Schema:         "http",
 				},
@@ -64,9 +61,7 @@ func TestBuildPostmanURL(t *testing.T) {
 				operation *spec.Operation
 			}{
 				cfg: Config{
-					Hostname:       "hostname",
-					HostnamePrefix: "prefix.",
-					HostnameSuffix: ".suffix.com",
+					Hostname:       "prefix.hostname.suffix.com",
 					BasePath:       "/test/",
 					Schema:         "http",
 				},
@@ -244,8 +239,6 @@ func TestBuildQueryParams(t *testing.T) {
 	}
 
 	for _, data := range dataset {
-
-		fmt.Println(data.input.Parameters[1].Enum)
 		assert.Equal(t, data.expected, buildQueryParams(data.input))
 	}
 }

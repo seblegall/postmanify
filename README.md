@@ -23,14 +23,12 @@ import (
 const (
 	swagSpecFilepath = "swagger.json"
 	pmanSpecFilepath = "postman.json"
-	hostPrefix = "prefix"
-	hostSuffix = "suffix"
+	hostname = "my.api.com"
 )
 
 func main() {
 	conv := postmanify.NewConverter(postmanify.Config{
-    		HostnamePrefix: hostPrefix,
-    		HostnameSuffix: hostSuffix,
+    		Hostname: hostname,
     		PostmanHeaders: map[string]postman2.Header{
     			"Authorization": {
     				Key:   "Authorization",
