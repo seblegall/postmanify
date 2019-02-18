@@ -8,6 +8,7 @@ import (
 	"github.com/go-openapi/spec"
 )
 
+//buildProperties creates a json request body from a map of swagger Schema
 func (c *Converter) buildProperties(properties map[string]spec.Schema) string {
 
 	body := make(map[string]interface{})
@@ -67,6 +68,7 @@ func (c *Converter) buildProperties(properties map[string]spec.Schema) string {
 	return string(b)
 }
 
+//buildPropertyDefaultValue generate default values for Swagger schema where no example or default are defined.
 func buildPropertyDefaultValue(propType spec.StringOrArray, propFormat string) interface{} {
 
 	if propType == nil {

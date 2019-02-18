@@ -16,8 +16,8 @@ package main
 import (
 	"io/ioutil"
 
-	"github.com/Meetic/postmanify"
-	"github.com/Meetic/postmanify/postman2"
+	"github.com/seblegall/postmanify"
+	"github.com/seblegall/postmanify/postman2"
 )
 
 const (
@@ -52,19 +52,16 @@ func main() {
 ### install
 
 ```sh
-curl -sf https://raw.githubusercontent.com/Meetic/postmanify/master/install.sh | sh
+curl -sf https://raw.githubusercontent.com/seblegall/postmanify/master/install.sh | sh
 ```
 
 ### usage 
 
 ```sh
--f string
+  -f string
         The swagger file to convert (default "swagger.json")
-  -host-prefix string
-        A prefix to put before the globale hostname
-  -host-suffix string
-        A suffix to put after the globale hostname
+  -host string
+        The hostname for the API
   -o string
         The postman collection file as output (default "postman_collection.json")
-
 ```

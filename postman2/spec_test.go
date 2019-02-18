@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Meetic/postmanify/postman2"
+	"github.com/seblegall/postmanify/postman2"
 )
 
 func TestNewCollection(t *testing.T) {

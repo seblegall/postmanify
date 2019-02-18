@@ -7,10 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Meetic/postmanify/postman2"
+	"github.com/seblegall/postmanify/postman2"
 	"github.com/go-openapi/spec"
 )
 
+//addUrls add a postman items for each swagger path in the spec
 func (c *Converter) addUrls(paths map[string]spec.PathItem, pman *postman2.Collection) error {
 	urls := []string{}
 	for url := range paths {
@@ -41,6 +42,7 @@ func (c *Converter) addUrls(paths map[string]spec.PathItem, pman *postman2.Colle
 	return nil
 }
 
+//buildPostmanURL build a postman url, part of a postman item, from a swagger operation
 func (c *Converter) buildPostmanURL(url string, operation *spec.Operation) postman2.URL {
 
 	//create hostname
@@ -96,6 +98,7 @@ func (c *Converter) buildPostmanURL(url string, operation *spec.Operation) postm
 	return postmanURL
 }
 
+//buildQueryParams build postman query param from a swagger operation spec
 func buildQueryParams(operation *spec.Operation) []postman2.URLQueryParam {
 
 	var queryParam []postman2.URLQueryParam
@@ -145,6 +148,7 @@ func buildQueryParams(operation *spec.Operation) []postman2.URLQueryParam {
 
 }
 
+//buildQueryParamDefaultValue returns default values from a param type and format
 func buildQueryParamDefaultValue(propType string, propFormat string) interface{} {
 
 	if propType == "" {
@@ -168,6 +172,7 @@ func buildQueryParamDefaultValue(propType string, propFormat string) interface{}
 	return ""
 }
 
+//pathHasMethodWithTag checks if a swagger path if defined for a given method (GET, PUT, POST, etc.)
 func pathHasMethodWithTag(path spec.PathItem, method string) bool {
 	method = strings.TrimSpace(strings.ToLower(method))
 	switch method {

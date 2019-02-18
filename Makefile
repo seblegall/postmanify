@@ -2,6 +2,7 @@
 SHELL := $(shell which bash)
 OSARCH := "linux/amd64 linux/386 windows/amd64 windows/386 darwin/amd64 darwin/386"
 ENV = /usr/bin/env
+GO111MODULE=on
 
 .SHELLFLAGS = -c
 
@@ -18,17 +19,16 @@ help: ## Show Help
 
 
 dep: ## Get build dependencies
-	  go get -v -u github.com/golang/dep/cmd/dep && \
-      go get github.com/mitchellh/gox
+	go get -v github.com/mitchellh/gox
 
 build: ## Build blackbeard
-	dep ensure && go build -o postmanify cmd/postmanify/main.go
+	$(ENV) go build -o postmanify cmd/postmanify/main.go
 
 cross-build: ## Build blackbeard for multiple os/arch
-	gox -osarch=$(OSARCH) -output "bin/postmanify_{{.OS}}_{{.Arch}}"
+	$(ENV) gox -osarch=$(OSARCH) -output "bin/postmanify_{{.OS}}_{{.Arch}}"
 
 test: ## Launch tests
-	go test -v ./...
+	$(ENV) go test -v ./...
 
 test-cover: ## Launch test coverage and send it to coverall
 	$(ENV) ./scripts/test-coverage.sh

@@ -4,28 +4,38 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/Meetic/postmanify/postman2"
+	"github.com/seblegall/postmanify/postman2"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 )
 
+//Config represents an converter configuration
 type Config struct {
+	//Hostname may be used if you want to override the swagger defined hostname
 	Hostname       string
+	//Schema represents the protocol. It may be used if you want to override the one defined in the swagger file.
 	Schema         string
+	//BasePath may be used to override the swagger defined basPath.
 	BasePath       string
+	//PostmanHeaders represents a collection of header to add on each documented path before generating the corresponding postman collection.
 	PostmanHeaders map[string]postman2.Header
 }
 
+//Converter represent a Swagger2.0 documentation to Postman 2.1 collections converter
 type Converter struct {
 	config Config
 }
 
+
+//NewConverter creates a new converter
 func NewConverter(cfg Config) *Converter {
 	return &Converter{
 		config: cfg,
 	}
 }
 
+//Convert converts a swagger specification to a postman collection.
+//Convert expected a json input defined as a slice of byte, and returns a json, defined as a slice of byte
 func (c *Converter) Convert(swaggerSpec []byte) ([]byte, error) {
 
 	specDoc, err := loads.Analyzed(swaggerSpec, "2.0")

@@ -4,8 +4,8 @@ import (
 	"flag"
 	"io/ioutil"
 
-	"github.com/Meetic/postmanify"
-	"github.com/Meetic/postmanify/postman2"
+	"github.com/seblegall/postmanify"
+	"github.com/seblegall/postmanify/postman2"
 )
 
 var (

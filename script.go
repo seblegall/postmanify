@@ -3,7 +3,7 @@ package postmanify
 import (
 	"strings"
 
-	"github.com/Meetic/postmanify/postman2"
+	"github.com/seblegall/postmanify/postman2"
 	"github.com/go-openapi/spec"
 )
 
@@ -11,6 +11,7 @@ const (
 	scriptType = "text/javascript"
 )
 
+//buildPostmanScript creates a postman js script from a "x-postman-script" swagger extension
 func buildPostmanScript(extensions spec.Extensions) postman2.Script {
 
 	if s, ok := extensions.GetString("x-postman-script"); ok {
