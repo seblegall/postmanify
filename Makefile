@@ -19,8 +19,7 @@ help: ## Show Help
 
 
 dep: ## Get build dependencies
-	  go get -v -u github.com/golang/dep/cmd/dep && \
-      go get github.com/mitchellh/gox
+	go get -v github.com/mitchellh/gox
 
 build: ## Build blackbeard
 	$(ENV) go build -o postmanify cmd/postmanify/main.go
