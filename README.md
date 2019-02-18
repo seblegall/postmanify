@@ -6,7 +6,7 @@ Postmanify also comes with a binary ready to be used.
 
 ## Warning
 
-Postmanify is still under development. First release is an alpha version.
+Postmanify is still under development. All releases v0.* must be consider as an Alpha version.
 
 ## Lib usage
 
@@ -53,6 +53,12 @@ func main() {
 
 ```sh
 curl -sf https://raw.githubusercontent.com/seblegall/postmanify/master/install.sh | sh
+```
+
+### Usage with docker
+
+```sh
+docker run seblegall/postmanify:latest postmanify --help
 ```
 
 ### usage 
