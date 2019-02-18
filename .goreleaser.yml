@@ -7,14 +7,14 @@ builds:
   goarch:
   - amd64
   main: ./cmd/postmanify/main.go
-# archive:
-#   replacements:
-#     darwin: macos
-#     linux: linux
-#     windows: windows
 changelog:
   sort: asc
   filters:
     exclude:
     - '^docs:'
     - '^test:'
+dockers:
+  - image_templates:
+    - "seblegall/postmanify:latest"
+    - "seblegall/postmanify:{{ .Tag }}"
+    - "seblegall/postmanify:v{{ .Major }}"
