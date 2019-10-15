@@ -88,7 +88,7 @@ Else, it generates a default value based on the field type. For example, for a s
 
 Bellow is an example of Swagger request body converted as a json payload. In this example the POST request is made to create a new user on a given API.
 
-Swagger spec : 
+Swagger spec :
 
 ```json
 "parameters": [
