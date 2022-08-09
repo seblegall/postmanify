@@ -20,7 +20,7 @@ require (
 	github.com/stretchr/testify v1.2.2
 	golang.org/x/net v0.0.0-20181108082009-03003ca0c849
 	golang.org/x/text v0.3.0
-	gopkg.in/yaml.v2 v2.2.1
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 go 1.13
